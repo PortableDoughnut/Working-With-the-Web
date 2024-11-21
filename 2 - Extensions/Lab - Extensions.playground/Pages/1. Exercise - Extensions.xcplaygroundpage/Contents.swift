@@ -19,12 +19,7 @@ struct Rectangle {
 	var length: Double
 	var width: Double
 	
-	var description: String {
-		"""
-length: \(length) 
-width: \(width)
-"""
-	}
+	
 }
 
 extension Rectangle {
@@ -38,7 +33,14 @@ extension Rectangle {
 	}
 }
 
-extension Rectangle: CustomStringConvertible {}
+extension Rectangle: CustomStringConvertible {
+	var description: String {
+		"""
+length: \(length) 
+width: \(width)
+"""
+	}
+}
 /*:
  Within the existing `Rectangle` extension, add a new mutating function, `half()`, which updates the original rectangle to have half the length and half the width. Use the `halved()` function as part of the implementation for `half()`.
  
