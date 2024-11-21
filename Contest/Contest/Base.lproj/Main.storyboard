@@ -1,24 +1,98 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13122.16" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23504" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13104.12"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23506"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
         <!--View Controller-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController id="BYZ-38-t0r" customClass="ViewController" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="Contest" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" xcode11CocoaTouchSystemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Enter Email" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eec-Rk-K8p">
+                                <rect key="frame" x="0.0" y="67" width="393" height="40.666666666666657"/>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle0"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="yKJ-gi-Jin">
+                                <rect key="frame" x="32" y="171.66666666666666" width="329" height="34"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits" returnKeyType="done" textContentType="email"/>
+                            </textField>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7JX-Pq-d2B">
+                                <rect key="frame" x="32" y="751" width="329" height="35"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="filled" title="Submit"/>
+                                <connections>
+                                    <action selector="emailSubmitButtonPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="AIb-o9-UQd"/>
+                                </connections>
+                            </button>
+                        </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="7JX-Pq-d2B" secondAttribute="trailing" constant="32" id="4Qj-2m-0yA"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="yKJ-gi-Jin" secondAttribute="trailing" constant="32" id="4pN-Bc-kKY"/>
+                            <constraint firstItem="eec-Rk-K8p" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="8" id="9ox-MB-S0J"/>
+                            <constraint firstItem="eec-Rk-K8p" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="EyI-cv-HN5"/>
+                            <constraint firstItem="yKJ-gi-Jin" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="32" id="FTr-vA-Is1"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="eec-Rk-K8p" secondAttribute="trailing" id="LGP-NF-Ae5"/>
+                            <constraint firstItem="yKJ-gi-Jin" firstAttribute="top" secondItem="eec-Rk-K8p" secondAttribute="bottom" constant="64" id="OPy-gP-nGJ"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="7JX-Pq-d2B" secondAttribute="bottom" constant="32" id="khh-XG-pay"/>
+                            <constraint firstItem="7JX-Pq-d2B" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="32" id="nbF-cQ-rJQ"/>
+                        </constraints>
                     </view>
+                    <connections>
+                        <outlet property="emailTextField" destination="yKJ-gi-Jin" id="IDv-t9-WGV"/>
+                        <segue destination="2WT-5t-IP4" kind="show" identifier="EmailEnteredSegue" id="Bag-6f-hmX"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="-724" y="-10"/>
+        </scene>
+        <!--View Controller-->
+        <scene sceneID="D31-9W-peh">
+            <objects>
+                <viewController id="2WT-5t-IP4" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="BRU-9u-OCk">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="842"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="You have successfully entered the contest!" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8CR-cx-q8d">
+                                <rect key="frame" x="0.0" y="32.000000000000007" width="393" height="81.666666666666686"/>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle0"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="8Df-Mp-K5V"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="8Df-Mp-K5V" firstAttribute="trailing" secondItem="8CR-cx-q8d" secondAttribute="trailing" id="3Hy-ee-fb2"/>
+                            <constraint firstItem="8CR-cx-q8d" firstAttribute="leading" secondItem="8Df-Mp-K5V" secondAttribute="leading" id="DMc-PB-U6O"/>
+                            <constraint firstItem="8CR-cx-q8d" firstAttribute="top" secondItem="8Df-Mp-K5V" secondAttribute="top" constant="32" id="NYs-1P-hyV"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="fXE-Gf-JO9"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="oEM-aW-6b1" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="36" y="-11"/>
         </scene>
     </scenes>
+    <color key="tintColor" red="1" green="0.5490196078431373" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
 </document>
