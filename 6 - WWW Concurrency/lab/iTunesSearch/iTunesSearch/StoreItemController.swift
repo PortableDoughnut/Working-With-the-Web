@@ -72,3 +72,23 @@ func fetchItems(matching query: [String: String]) async throws -> [StoreItem] {
 		throw error
 	}
 }
+
+	/// Makes a URLQueryItem array for use in searching iTunes content
+	/// - Parameters:
+	///   - term: The URL-encoded text string you want to search for. For example: jack+johnson.
+	///   - country: The two-letter country code for the store you want to search. The search uses the default store front for the specified country. For example: US. The default is US.
+	///   - media: The media type you want to search for. For example: movie. The default is all.
+	///   - entity: The type of results you want returned, relative to the specified media type. For example: movieArtist for a movie media type search. The default is the track entity associated with the specified media type.
+	///   - limit: The number of search results you want the iTunes Store to return. For example: 25. The default is 50.
+	/// - Returns: The URLQuearyItem array
+func getQuery(term: String, country: String = "US", media: String = "music", entity: String = "song", limit: Int = 50)
+-> [String: String]
+{
+	[
+		"term" : term,
+		"country" : country,
+		"media" : media,
+		"entity" : entity,
+		"limit" : String(limit)
+	]
+}
