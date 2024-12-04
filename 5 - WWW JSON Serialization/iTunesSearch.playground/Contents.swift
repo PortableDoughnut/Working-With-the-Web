@@ -1,13 +1,14 @@
 import UIKit
 
+
+
 extension Data {
-    func prettyPrintedJSONString() {
+    func prettyPrintedJSONString() throws {
         guard
             let jsonObject = try? JSONSerialization.jsonObject(with: self, options: []),
             let jsonData = try? JSONSerialization.data(withJSONObject: jsonObject, options: [.prettyPrinted]),
             let prettyJSONString = String(data: jsonData, encoding: .utf8) else {
-                print("Failed to read JSON Object.")
-                return
+                throw JSONSerializationError.invalidJSON
         }
         print(prettyJSONString)
     }
@@ -27,7 +28,8 @@ Task {
     let (data, response) = try await URLSession.shared.data(from: urlComponents.url!)
 
     if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
-        data.prettyPrintedJSONString()
+		do { try data.prettyPrintedJSONString() }
+		catch { print("Error: \(error)") }
     }
 }
 //----------------end-student--------------

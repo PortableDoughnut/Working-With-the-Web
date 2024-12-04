@@ -1,18 +1,83 @@
 import UIKit
 
-struct iTunesSearchResponse: Decodable {
-  let results: [iTunesSearchResults]
+enum JSONSerializationError: Error {
+	case invalidJSON
 }
 
-struct iTunesSearchResults: Decodable {
-  let artistName: String?
-  let trackName: String?
+extension JSONSerializationError: CustomStringConvertible {
+	var description: String {
+		let errorString: String = "Error:"
+		var errorMessage: String
+		
+		switch self {
+			case .invalidJSON: errorMessage =  "Invalid JSON"
+		}
+		
+		return "\(errorString) \(errorMessage)"
+	}
 }
 
-extension iTunesSearchResults: CustomStringConvertible {
-  var description: String {
-    "\(artistName ?? "Artist Name") - \(trackName ?? "Track Name")"
-  }
+extension Data {
+	func printPrettyJSON() throws {
+		guard
+			let jsonObject: Any = try? JSONSerialization.jsonObject(with: self, options: []),
+			let jsonData: Data = try? JSONSerialization.data(withJSONObject: jsonObject, options: [.prettyPrinted]),
+			let jsonString: String = String(data: jsonData, encoding: .utf16)
+		else {
+			throw JSONSerializationError.invalidJSON
+		}
+		
+		print(jsonData)
+	}
+}
+
+struct StoreItem: Codable {
+	var wrapper: String
+	var mediaType: String
+	var artist: String
+	var name: String
+	var artworkMedium: URL
+	var artworkLarge: URL
+	var price: Double
+	var releaseDate: Date
+	var isExplict: Bool
+	
+	enum CodingKeys: String, CodingKey {
+		case wrapper = "wrapperType"
+		case mediaType = "kind"
+		case artist = "artistName"
+		case name = "trackName"
+		case artworkMedium = "artworkUrl60"
+		case artworkLarge = "artworkUrl100"
+		case price = "trackPrice"
+		case releaseDate
+		case isExplict = "trackExplictness"
+	}
+	
+	init(from decoder: Decoder) throws {
+		let containter = try decoder.container(keyedBy: CodingKeys.self)
+		let rawValue = try containter.decode(String.self, forKey: .isExplict)
+		
+		switch rawValue {
+			case "explicit":
+				self.isExplict = true
+			default:
+				self.isExplict = false
+		}
+		
+		self.artist = try containter.decode(String.self, forKey: .artist)
+		self.name = try containter.decode(String.self, forKey: .name)
+		self.releaseDate = try containter.decode(Date.self, forKey: .releaseDate)
+		self.artworkLarge = try containter.decode(URL.self, forKey: .artworkLarge)
+		self.artworkMedium = try containter.decode(URL.self, forKey: .artworkMedium)
+		self.price = try containter.decode(Double.self, forKey: .price)
+		self.wrapper = try containter.decode(String.self, forKey: .wrapper)
+		self.mediaType = try containter.decode(String.self, forKey: .mediaType)
+	}
+}
+
+struct SearchResponse: Codable {
+	let results: [StoreItem]
 }
 
 var iTunesSearchURLComponents: URLComponents = .init()
@@ -41,41 +106,44 @@ func getQuery(term: String, country: String, media: String, entity: String, limi
 }
 
 @MainActor func iTunesSearch(
-  term: String, country: String, media: String, entity: String, limit: Int) {
-  iTunesSearchURLComponents.queryItems = getQuery(
-    term: term,
-    country: country,
-    media: media,
-    entity: entity,
-    limit: limit
-  )
-
-  guard let iTunesSearchURL = iTunesSearchURLComponents.url else {
-    print("Error: Could not create iTunesSearchURL")
-    return
-  }
-
-  Task {
-    do {
-      let (data, response) = try await URLSession.shared.data(from: iTunesSearchURL)
-
-      guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-        print("Error: Bad HTTP response")
-        throw URLError(.badServerResponse)
-      }
-
-      let iTunesResponse = try JSONDecoder().decode(iTunesSearchResponse.self, from: data)
-
-      var iTunesItems: [iTunesSearchResults] = iTunesResponse.results
-
-      for item in iTunesItems {
-        print(item)
-      }
-    } catch {
-      print("Error: \(error.localizedDescription)")
-    }
-  }
-}
+	term: String, country: String, media: String, entity: String, limit: Int) {
+		iTunesSearchURLComponents.queryItems = getQuery(
+			term: term,
+			country: country,
+			media: media,
+			entity: entity,
+			limit: limit
+		)
+		
+		guard let iTunesSearchURL = iTunesSearchURLComponents.url else {
+			print("Error: Could not create iTunesSearchURL")
+			return
+		}
+		
+		Task {
+			do {
+				let (data, response) = try await URLSession.shared.data(from: iTunesSearchURL)
+				
+				guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+					do { try data.printPrettyJSON() }
+					catch { print(error) }
+					throw URLError(.badServerResponse)
+				}
+				
+//				let iTunesResponse = try JSONDecoder().decode(iTunesSearchResponse.self, from: data)
+				
+//				var iTunesItems: [iTunesSearchResults] = iTunesResponse.results
+				
+				/*
+				for item in iTunesItems {
+					print(item)
+				}
+				*/
+			} catch {
+				print(error)
+			}
+		}
+	}
 
 iTunesSearch(
   term: "teenage wildlife david bowie", country: "us", media: "song", entity: "musicTrack", limit: 1
