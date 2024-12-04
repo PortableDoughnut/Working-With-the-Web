@@ -6,15 +6,24 @@ enum JSONSerializationError: Error {
 
 extension JSONSerializationError: CustomStringConvertible {
 	var description: String {
-		let errorString: String = "Error:"
-		var errorMessage: String
-		
 		switch self {
-			case .invalidJSON: errorMessage =  "Invalid JSON"
+			case .invalidJSON: return "Invalid JSON"
 		}
-		
-		return "\(errorString) \(errorMessage)"
 	}
+}
+
+enum FetchError: Error, LocalizedError, CustomStringConvertible {
+	var description: String {
+		switch self {
+			case .invalidURL: return "Invalid URL"
+			case .invalidResponse: return "Invalid response"
+			case .invalidData: return "Invalid data"
+		}
+	}
+	
+	case invalidURL
+	case invalidResponse
+	case invalidData
 }
 
 extension Data {
@@ -22,12 +31,12 @@ extension Data {
 		guard
 			let jsonObject: Any = try? JSONSerialization.jsonObject(with: self, options: []),
 			let jsonData: Data = try? JSONSerialization.data(withJSONObject: jsonObject, options: [.prettyPrinted]),
-			let jsonString: String = String(data: jsonData, encoding: .utf16)
+			let jsonString: String = String(data: jsonData, encoding: .utf8)
 		else {
 			throw JSONSerializationError.invalidJSON
 		}
 		
-		print(jsonData)
+		print(jsonString)
 	}
 }
 
@@ -38,9 +47,18 @@ struct StoreItem: Codable {
 	var name: String
 	var artworkMedium: URL
 	var artworkLarge: URL
-	var price: Double
+	var price: Double?
 	var releaseDate: Date
 	var isExplict: Bool
+	
+	var description: String {
+"""
+\(name) by \(artist)
+This is \(isExplict ? "explicit" : "clean") piece of art
+\(name) came out on \(releaseDate.formatted(date: .long, time: .omitted))
+It will cost you $\(price ?? 0) to buy this.
+"""
+	}
 	
 	enum CodingKeys: String, CodingKey {
 		case wrapper = "wrapperType"
@@ -51,39 +69,67 @@ struct StoreItem: Codable {
 		case artworkLarge = "artworkUrl100"
 		case price = "trackPrice"
 		case releaseDate
-		case isExplict = "trackExplictness"
+		case isExplict = "trackExplicitness"
 	}
 	
 	init(from decoder: Decoder) throws {
 		let containter = try decoder.container(keyedBy: CodingKeys.self)
-		let rawValue = try containter.decode(String.self, forKey: .isExplict)
+		let explicitRawValue = try containter.decode(String.self, forKey: .isExplict)
+		let releaseDateRawValue = try containter.decode(String.self, forKey: .releaseDate)
 		
-		switch rawValue {
+		let dateFormatter: DateFormatter = .init()
+		dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+		dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+		dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+		self.releaseDate = dateFormatter.date(from: releaseDateRawValue)!
+		
+		
+		
+		switch explicitRawValue {
 			case "explicit":
 				self.isExplict = true
 			default:
 				self.isExplict = false
 		}
 		
+		self.price = try containter.decodeIfPresent(Double.self, forKey: .price)
 		self.artist = try containter.decode(String.self, forKey: .artist)
 		self.name = try containter.decode(String.self, forKey: .name)
-		self.releaseDate = try containter.decode(Date.self, forKey: .releaseDate)
 		self.artworkLarge = try containter.decode(URL.self, forKey: .artworkLarge)
 		self.artworkMedium = try containter.decode(URL.self, forKey: .artworkMedium)
-		self.price = try containter.decode(Double.self, forKey: .price)
 		self.wrapper = try containter.decode(String.self, forKey: .wrapper)
 		self.mediaType = try containter.decode(String.self, forKey: .mediaType)
 	}
 }
 
-struct SearchResponse: Codable {
-	let results: [StoreItem]
-}
+struct SearchResponse: Codable { let results: [StoreItem] }
 
-var iTunesSearchURLComponents: URLComponents = .init()
-iTunesSearchURLComponents.scheme = "https"
-iTunesSearchURLComponents.host = "itunes.apple.com"
-iTunesSearchURLComponents.path = "/search"
+
+func fetchItems(matching query: [String: String]) async throws -> [StoreItem] {
+	var iTunesSearchURLComponents: URLComponents = .init()
+	iTunesSearchURLComponents.scheme = "https"
+	iTunesSearchURLComponents.host = "itunes.apple.com"
+	iTunesSearchURLComponents.path = "/search"
+	
+	iTunesSearchURLComponents.queryItems = query.map {
+		URLQueryItem(name: $0.key, value: $0.value)
+		}
+	
+		do {
+			let (data, response) = try await URLSession.shared.data(from: iTunesSearchURLComponents.url!)
+			guard let httpResponse = response as? HTTPURLResponse,
+				  httpResponse.statusCode == 200
+			else {
+				throw FetchError.invalidResponse
+			}
+			let decoder = JSONDecoder()
+			let searchResponse = try decoder.decode(SearchResponse.self, from: data)
+			return searchResponse.results
+		} catch {
+			print("Error fetching items: \(error)")
+			throw error
+		}
+}
 
 /// Makes a URLQueryItem array for use in searching iTunes content
 /// - Parameters:
@@ -93,64 +139,57 @@ iTunesSearchURLComponents.path = "/search"
 ///   - entity: The type of results you want returned, relative to the specified media type. For example: movieArtist for a movie media type search. The default is the track entity associated with the specified media type.
 ///   - limit: The number of search results you want the iTunes Store to return. For example: 25. The default is 50.
 /// - Returns: The URLQuearyItem array
-func getQuery(term: String, country: String, media: String, entity: String, limit: Int)
-  -> [URLQueryItem]
+func getQuery(term: String, country: String = "US", media: String = "music", entity: String = "song", limit: Int = 50)
+-> [String: String]
 {
   [
-    URLQueryItem(name: "term", value: term),
-    URLQueryItem(name: "country", value: country),
-    URLQueryItem(name: "media", value: media),
-    URLQueryItem(name: "entity", value: entity),
-    URLQueryItem(name: "limit", value: String(limit)),
+    "term" : term,
+    "country" : country,
+    "media" : media,
+    "entity" : entity,
+	"limit" : String(limit)
   ]
 }
-
-@MainActor func iTunesSearch(
-	term: String, country: String, media: String, entity: String, limit: Int) {
-		iTunesSearchURLComponents.queryItems = getQuery(
-			term: term,
-			country: country,
-			media: media,
-			entity: entity,
-			limit: limit
-		)
-		
-		guard let iTunesSearchURL = iTunesSearchURLComponents.url else {
-			print("Error: Could not create iTunesSearchURL")
-			return
+Task {
+	do {
+		let davidBowieResults = try await fetchItems(matching: getQuery(term: "teenage wildlife david bowie", limit: 1))
+		for davidBowieResult in davidBowieResults {
+			print(davidBowieResult.description)
+			print("---")
 		}
 		
-		Task {
-			do {
-				let (data, response) = try await URLSession.shared.data(from: iTunesSearchURL)
-				
-				guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-					do { try data.printPrettyJSON() }
-					catch { print(error) }
-					throw URLError(.badServerResponse)
-				}
-				
-//				let iTunesResponse = try JSONDecoder().decode(iTunesSearchResponse.self, from: data)
-				
-//				var iTunesItems: [iTunesSearchResults] = iTunesResponse.results
-				
-				/*
-				for item in iTunesItems {
-					print(item)
-				}
-				*/
-			} catch {
-				print(error)
-			}
+		print()
+		
+		let weyesBloodResults = try await fetchItems(matching: getQuery(term: "andromeda weyes blood", limit: 1))
+		for weyesBloodResult in weyesBloodResults {
+			print(weyesBloodResult.description)
+			print("---")
 		}
+		
+		print()
+		
+		let mamboSunResults = try await fetchItems(matching: getQuery(term: "Mambo Sun T.Rex", limit: 1))
+		for mamboSunResult in mamboSunResults {
+			print(mamboSunResult.description)
+			print("---")
+		}
+		
+		print()
+		
+		let janisJoplinResults = try await fetchItems(matching: getQuery(term: "Cry Baby Janis Joplin", limit: 1))
+		for janisJoplinResult in janisJoplinResults {
+			print(janisJoplinResult.description)
+			print("---")
+		}
+		
+		print()
+		
+		let pinkResults = try await fetchItems(matching: getQuery(term: "Pink Pony Club", limit: 1))
+		for pinkResult in pinkResults {
+			print(pinkResult.description)
+			print("---")
+		}
+	} catch {
+		print(error)
 	}
-
-iTunesSearch(
-  term: "teenage wildlife david bowie", country: "us", media: "song", entity: "musicTrack", limit: 1
-)
-iTunesSearch(
-  term: "Andromeda Weyes Blood", country: "us", media: "song", entity: "musicTrack", limit: 1)
-iTunesSearch(term: "Mambo Sun T.Rex", country: "us", media: "song", entity: "musicTrack", limit: 1)
-iTunesSearch(
-  term: "Cry Baby Janis Joplin", country: "us", media: "song", entity: "musicTrack", limit: 1)
-iTunesSearch(term: "Pink Pony Club", country: "us", media: "song", entity: "musicTrack", limit: 1)
+}
