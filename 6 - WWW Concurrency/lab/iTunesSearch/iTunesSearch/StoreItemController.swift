@@ -13,19 +13,19 @@ enum JSONSerializationError: Error {
 
 extension JSONSerializationError: CustomStringConvertible {
   var description: String {
-    switch self {
-    case .invalidJSON: return "Invalid JSON"
-    }
+	switch self {
+	case .invalidJSON: return "Invalid JSON"
+	}
   }
 }
 
 enum FetchError: Error, LocalizedError, CustomStringConvertible {
   var description: String {
-    switch self {
-    case .invalidURL: return "Invalid URL"
-    case .invalidResponse: return "Invalid response"
-    case .invalidData: return "Invalid data"
-    }
+	switch self {
+	case .invalidURL: return "Invalid URL"
+	case .invalidResponse: return "Invalid response"
+	case .invalidData: return "Invalid data"
+	}
   }
 
   case invalidURL
@@ -35,45 +35,45 @@ enum FetchError: Error, LocalizedError, CustomStringConvertible {
 
 extension Data {
   func printPrettyJSON() throws {
-    guard
-      let jsonObject: Any = try? JSONSerialization.jsonObject(with: self, options: []),
-      let jsonData: Data = try? JSONSerialization.data(
-        withJSONObject: jsonObject, options: [.prettyPrinted]),
-      let jsonString: String = String(data: jsonData, encoding: .utf8)
-    else {
-      throw JSONSerializationError.invalidJSON
-    }
+	guard
+	  let jsonObject: Any = try? JSONSerialization.jsonObject(with: self, options: []),
+	  let jsonData: Data = try? JSONSerialization.data(
+		withJSONObject: jsonObject, options: [.prettyPrinted]),
+	  let jsonString: String = String(data: jsonData, encoding: .utf8)
+	else {
+	  throw JSONSerializationError.invalidJSON
+	}
 
-    print(jsonString)
+	print(jsonString)
   }
 }
 
 class StoreItemController {
 
   func fetchItems(matching query: [String: String]) async throws -> [StoreItem] {
-    var iTunesSearchURLComponents: URLComponents = .init()
-    iTunesSearchURLComponents.scheme = "https"
-    iTunesSearchURLComponents.host = "itunes.apple.com"
-    iTunesSearchURLComponents.path = "/search"
+	var iTunesSearchURLComponents: URLComponents = .init()
+	iTunesSearchURLComponents.scheme = "https"
+	iTunesSearchURLComponents.host = "itunes.apple.com"
+	iTunesSearchURLComponents.path = "/search"
 
-    iTunesSearchURLComponents.queryItems = query.map {
-      URLQueryItem(name: $0.key, value: $0.value)
-    }
+	iTunesSearchURLComponents.queryItems = query.map {
+	  URLQueryItem(name: $0.key, value: $0.value)
+	}
 
-    do {
-      let (data, response) = try await URLSession.shared.data(from: iTunesSearchURLComponents.url!)
-      guard let httpResponse = response as? HTTPURLResponse,
-        httpResponse.statusCode == 200
-      else {
-        throw FetchError.invalidResponse
-      }
-      let decoder = JSONDecoder()
-      let searchResponse = try decoder.decode(SearchResponse.self, from: data)
-      return searchResponse.results
-    } catch {
-      print("Error fetching items: \(error)")
-      throw error
-    }
+	do {
+	  let (data, response) = try await URLSession.shared.data(from: iTunesSearchURLComponents.url!)
+	  guard let httpResponse = response as? HTTPURLResponse,
+		httpResponse.statusCode == 200
+	  else {
+		throw FetchError.invalidResponse
+	  }
+	  let decoder = JSONDecoder()
+	  let searchResponse = try decoder.decode(SearchResponse.self, from: data)
+	  return searchResponse.results
+	} catch {
+	  print("Error fetching items: \(error)")
+	  throw error
+	}
   }
 
   /// Makes a URLQueryItem array for use in searching iTunes content
@@ -85,17 +85,17 @@ class StoreItemController {
   ///   - limit: The number of search results you want the iTunes Store to return. For example: 25. The default is 50.
   /// - Returns: The URLQuearyItem array
   func getQuery(
-    term: String, country: String = "US", media: String = "music", entity: String = "song",
-    limit: Int = 50
+	term: String, country: String = "US", media: String = "music", entity: String = "song",
+	limit: Int = 50
   )
-    -> [String: String]
+	-> [String: String]
   {
-    [
-      "term": term,
-      "country": country,
-      "media": media,
-      "entity": entity,
-      "limit": String(limit),
-    ]
+	[
+	  "term": term,
+	  "country": country,
+	  "media": media,
+	  "entity": entity,
+	  "limit": String(limit),
+	]
   }
 }
