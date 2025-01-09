@@ -11,7 +11,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		63CA4A7A2D09F1D500422994 /* Exceptions for "Life-FormSerch" folder in "Life-FormSerch" target */ = {
+		63F4D7442D2DA231002A50B2 /* Exceptions for "Life-FormSerch" folder in "Life-FormSerch" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -24,7 +24,7 @@
 		63CA4A6A2D09F1D300422994 /* Life-FormSerch */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				63CA4A7A2D09F1D500422994 /* Exceptions for "Life-FormSerch" folder in "Life-FormSerch" target */,
+				63F4D7442D2DA231002A50B2 /* Exceptions for "Life-FormSerch" folder in "Life-FormSerch" target */,
 			);
 			path = "Life-FormSerch";
 			sourceTree = "<group>";
@@ -99,11 +99,11 @@
 				};
 			};
 			buildConfigurationList = 63CA4A632D09F1D300422994 /* Build configuration list for PBXProject "Life-FormSerch" */;
-			developmentRegion = en;
+			developmentRegion = "en-GB";
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				en,
 				Base,
+				"en-GB",
 			);
 			mainGroup = 63CA4A5F2D09F1D300422994;
 			minimizedProjectReferenceProxies = 1;
@@ -209,6 +209,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -272,6 +273,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";

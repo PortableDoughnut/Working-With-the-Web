@@ -7,7 +7,27 @@
 
 import UIKit
 
+extension UITableViewCell {
+	private struct AssociatedKeys {
+		static var searchIDKey = "searchIDKey"
+	}
+	
+	var searchID: Int {
+		get {
+			if let value = objc_getAssociatedObject(self, &AssociatedKeys.searchIDKey) as? Int {
+				return value
+			}
+			return 0
+		}
+		set {
+			objc_setAssociatedObject(self, &AssociatedKeys.searchIDKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+		}
+	}
+}
+
 class ViewController: UIViewController {
+	var idToUseInSegue: Int?
+	
 	@IBOutlet weak var searchBar: UISearchBar! {
 		didSet {
 			searchBar.delegate = self
@@ -51,6 +71,8 @@ class ViewController: UIViewController {
 			contentConfig.text = result.content
 			contentConfig.secondaryText = result.title
 			
+			cell.searchID = result.id
+			
 			cell.contentConfiguration = contentConfig
 			return cell
 		}
@@ -72,8 +94,11 @@ class ViewController: UIViewController {
 	}
 	
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-		if let destination = segue.destination as? DetailViewController {
-			print("segue")
+		if let sender = sender as? UITableViewCell,
+		   let destination = segue.destination as? DetailViewController
+		{
+			idToUseInSegue = sender.searchID
+			destination.id = sender.searchID
 		}
 	}
 }
@@ -98,7 +123,7 @@ extension ViewController: UISearchBarDelegate {
 			[weak self] in
 			
 			do {
-				try await Task.sleep(nanoseconds: 300_000_000)
+				try await Task.sleep(nanoseconds: 300_000_000_0)
 				await self?.performSearch(query: query)
 			} catch {
 				print("Error: " + error.localizedDescription)
@@ -111,7 +136,7 @@ extension ViewController: UISearchBarDelegate {
 		
 		startSpinning()
 		do {
-			let filteredResults = try await NetworkController.shared.fetchSearchResults(query: query)?.results ?? []
+			let filteredResults = try await NetworkController.shared.fetchSearchResults(query: query).results
 			stopSpinning()
 			updateSnapshot(with: filteredResults)
 		} catch {
@@ -124,7 +149,7 @@ extension ViewController: UISearchBarDelegate {
 
 extension ViewController: UITableViewDataSource, UITableViewDelegate {
 	func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-		dataSource.snapshot().numberOfItems ?? 0
+		dataSource.snapshot().numberOfItems
 	}
 	
 	func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -136,6 +161,20 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
 	}
 	
 	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-		performSegue(withIdentifier: "detailSegue", sender: self)
+		guard let cell = tableView.cellForRow(at: indexPath) else {
+			print("Error: Unable to get the cell at indexPath \(indexPath)")
+			return
+		}
+		
+		let id = cell.searchID
+		let storyboard = UIStoryboard(name: "Main", bundle: nil)
+		guard let detailVC = storyboard.instantiateViewController(withIdentifier: "DetailViewController") as? DetailViewController else {
+			print("Error: Could not instantiate DetailViewController")
+			return
+		}
+		
+		print(id)
+		detailVC.id = id
+			navigationController?.pushViewController(detailVC, animated: true)
 	}
 }

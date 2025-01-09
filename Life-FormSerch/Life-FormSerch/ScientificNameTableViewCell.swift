@@ -20,5 +20,10 @@ class ScientificNameTableViewCell: UITableViewCell {
 
         // Configure the view for the selected state
     }
+	
+	func configure(with taxonomySource: EOLDetail) {
+		print(taxonomySource.taxonConcept.scientificName)
+		detailLabel.text = taxonomySource.taxonConcept.scientificName
+	}
 
 }
